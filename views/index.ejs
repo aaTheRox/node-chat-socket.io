@@ -1,0 +1,100 @@
+<%- include('partials/head') %>
+
+<div class="flex flex-col h-screen text-x">
+  <div id="content" class="flex flex-1 overflow-y-auto">
+    <div class="text-white w-full px-5">
+      <div id="msg-container" class="text-2xl">
+        <div id="loading">Espera por favor...</div>
+      </div>
+      <div id="typing"></div>
+    </div>
+  </div>
+  <div class="bg-gray-800">
+    <form action="" id="form">
+
+
+<div class="md:flex">
+  <div class="md:w-1/4">
+    <input autofocus autocomplete="off" class="appearance-none bg-gray-900 rounded w-full py-2 px-3 text-gray-100 mb-3 leading-tight focus:outline-none" type="text" value="" placeholder="Nombre de usuario" id="author">
+  </div>
+  <div class="md:w-full md:px-2">
+        <input autocomplete="off" class="appearance-none bg-gray-900 rounded w-full py-2 px-3 text-gray-100 mb-3 leading-tight focus:outline-none" id="message" placeholder="Escribe algo..." />
+  </div>
+  <div class="">
+    <button id="io" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Enviar</button>
+  </div>
+</div>
+
+  </div>
+    </form>
+  </div>
+</div>
+
+    <script src="socket.io/socket.io.js"></script>
+    <script>
+      var typing = false;
+     // var socket = io("https://nodechat-socketio.herokuapp.com/");
+      var socket = io();
+      let author = getValue('author'),
+          message = getValue('message'),
+          messageContainer = document.getElementById('msg-container')
+
+      document.getElementById('form').addEventListener('submit', () => {
+      event.preventDefault();
+        if(getValue('message') !='' && getValue('author') != '') {
+          socket.emit('message', {
+          author: getValue('author'),
+          message: getValue('message')
+        })
+        document.getElementById('message').value = '';
+        } else {
+          if(getValue('message') =='') {
+            document.getElementById('message').focus();
+          }
+          if(getValue('author') =='') {
+            document.getElementById('author').focus();
+          }
+          //alert('Rellena los campos nombre de usuario y mensaje')
+        }
+
+        window.scrollTo(0,document.getElementById('content').scrollHeight);
+      })
+
+      socket.on('connect', () => {
+        document.getElementById('loading').remove();
+      })
+      socket.on('message', (data) => {
+        messageContainer.innerHTML += `<p><strong>${escapeHTML(data.author)}</strong>: ${escapeHTML(data.message)}</p>`;
+        document.getElementById('message').focus();
+      })
+
+       document.getElementById('message').addEventListener('keypress', () => {
+        typing = true;
+        socket.emit('typing', {author: getValue('author')})
+        timeout = setTimeout(clearTyping, 2000);
+      });
+
+      function clearTyping() {
+        typing = false;
+        socket.emit("typing", false);
+      }
+      socket.on('typing', (data) => {
+        if(data) {
+          console.log(data)
+          document.getElementById('typing').innerHTML = `<p><strong>${data.author}</strong> está escribiendo...</p>`;
+        } else {
+          document.getElementById('typing').innerHTML = ``;
+        }
+      })
+
+      function escapeHTML(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+      function getValue(element) {
+        return document.getElementById(element).value;
+      }
+    </script>
+
+
+<%- include('partials/foot') %>
