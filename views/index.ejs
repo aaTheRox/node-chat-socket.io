@@ -18,10 +18,9 @@
     <input autofocus autocomplete="off" class="appearance-none bg-gray-900 rounded w-full py-2 px-3 text-gray-100 mb-3 leading-tight focus:outline-none" type="text" value="" placeholder="Nombre de usuario" id="author">
   </div>
   <div class="md:w-full md:px-2">
-        <input autocomplete="off" class="appearance-none bg-gray-900 rounded w-full py-2 px-3 text-gray-100 mb-3 leading-tight focus:outline-none" id="message" placeholder="Escribe algo..." />
+        <input  autocomplete="off" class="appearance-none bg-gray-900 rounded w-full py-2 px-3 text-gray-100 mb-3 leading-tight focus:outline-none" id="message" placeholder="Escribe algo..." />
   </div>
   <div class="">
-    <button id="io" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Enviar</button>
   </div>
 </div>
 
@@ -39,8 +38,21 @@
           message = getValue('message'),
           messageContainer = document.getElementById('msg-container')
 
-      document.getElementById('form').addEventListener('submit', () => {
-      event.preventDefault();
+      
+
+      socket.on('connect', () => {
+        document.getElementById('loading').remove();
+      })
+      
+       document.getElementById('message').addEventListener('keypress', (e) => {
+        typing = true;
+        socket.emit('typing', {author: getValue('author')})
+        timeout = setTimeout(clearTyping, 2000);
+      });
+
+      document.getElementById('message').addEventListener('keypress', (e) => {
+        if(e.keyCode==13 || e.which==13) {
+event.preventDefault();
         if(getValue('message') !='' && getValue('author') != '') {
           socket.emit('message', {
           author: getValue('author'),
@@ -58,20 +70,14 @@
         }
 
         window.scrollTo(0,document.getElementById('content').scrollHeight);
+        }
+      
       })
 
-      socket.on('connect', () => {
-        document.getElementById('loading').remove();
-      })
-      socket.on('message', (data) => {
+
+     socket.on('message', (data) => {
         messageContainer.innerHTML += `<p><strong>${escapeHTML(data.author)}</strong>: ${escapeHTML(data.message)}</p>`;
         document.getElementById('message').focus();
-      })
-
-       document.getElementById('message').addEventListener('keypress', () => {
-        typing = true;
-        socket.emit('typing', {author: getValue('author')})
-        timeout = setTimeout(clearTyping, 2000);
       });
 
       function clearTyping() {
