@@ -1,0 +1,122 @@
+<%- include('partials/head') %>
+<div class="flex flex-col h-screen text-x">
+  <div id="content" class="flex flex-1 overflow-y-auto">
+    <div class="text-white w-full px-5">
+      <div id="msg-container" class="text-2xl">
+        <div id="loading">Espera por favor...</div>
+      </div>
+      <div id="typing"></div>
+    </div>
+    <div class="flex-1 px-5 ">
+      <button class="appearance-none bg-red-500 font-bold rounded w-full py-2 px-6 text-gray-100 mt-5">Cerrar</button>
+    </div>
+  </div>
+  <div class="bg-gray-800">
+    <form action="" id="form">
+
+
+<div class="md:flex">
+  <div class="md:w-1/4 px-2">
+    <input autofocus autocomplete="off" class="appearance-none bg-gray-900 rounded w-full py-2 px-3 text-gray-100 mb-3 leading-tight focus:outline-none" type="text" value="" placeholder="Nombre de usuario" id="author">
+  </div>
+  <div class="md:w-full md:px-2">
+        <input  autocomplete="off" class="appearance-none bg-gray-900 rounded w-full py-2 px-3 text-gray-100 mb-3 leading-tight focus:outline-none" id="message" placeholder="Escribe algo..." />
+  </div>
+  
+</div>
+
+  </div>
+    </form>
+  </div>
+</div>
+<%- include('partials/scripts') %>
+
+    <script>
+      var typing = false;
+     // var socket = io("https://nodechat-socketio.herokuapp.com/");
+      var socket = io();
+      let author = getValue('author'),
+          message = getValue('message'),
+          messageContainer = document.getElementById('msg-container')
+
+      window.onload = () => {
+        socket.emit('loadData', {
+          sender_id: 2
+        });
+        
+      } 
+
+      socket.on('loadData', (data) => {
+        console.log(data)
+
+        data.map((msg) => {
+          messageContainer.innerHTML += `<p><strong>${escapeHTML(msg.author)}</strong>: ${escapeHTML(msg.message)}</p>`;
+        })
+      })
+
+      socket.on('connect', () => {
+        document.getElementById('loading').remove();
+      })
+      
+       document.getElementById('message').addEventListener('keyup', (e) => {
+        typing = true;
+        socket.emit('typing', {author: getValue('author')})
+        timeout = setTimeout(clearTyping, 2000);
+      });
+
+      document.getElementById('message').addEventListener('keypress', (e) => {
+        if(e.keyCode==13 || e.which==13) {
+          e.preventDefault();
+        if(getValue('message') !='' && getValue('author') != '') {
+          socket.emit('message', {
+          author: getValue('author'),
+          message: getValue('message')
+        })
+        document.getElementById('message').value = '';
+        } else {
+          if(getValue('message') =='') {
+            document.getElementById('message').focus();
+          }
+          if(getValue('author') =='') {
+            document.getElementById('author').focus();
+          }
+          //alert('Rellena los campos nombre de usuario y mensaje')
+        }
+
+
+        let content = document.getElementById('content');
+        content.scrollTop  = content.scrollHeight + 100;
+        }
+      
+      })
+
+
+     socket.on('message', (data) => {
+        messageContainer.innerHTML += `<p><strong>${escapeHTML(data.author)}</strong>: ${escapeHTML(data.message)}</p>`;
+        document.getElementById('message').focus();
+      });
+
+      function clearTyping() {
+        typing = false;
+        socket.emit("typing", false);
+      }
+      socket.on('typing', (data) => {
+        if(data && data.author != '') {
+          
+          document.getElementById('typing').innerHTML = `<p><strong>${data.author}</strong> está escribiendo...</p>`;
+        } else {
+          document.getElementById('typing').innerHTML = ``;
+        }
+      })
+
+      function escapeHTML(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+      function getValue(element) {
+        return document.getElementById(element).value;
+      }
+    </script>
+
+
+<%- include('partials/foot') %>
