@@ -49,7 +49,7 @@ document.getElementById('message').addEventListener('keypress', (e) => {
         }
 
         let content = document.getElementById('content');
-        content.scrollTop = content.scrollHeight + 100;
+        content.scrollTop = content.scrollHeight + 200;
     }
 })
 
