@@ -2,43 +2,23 @@
 
 <div class="bg-grey-lighter h-screen overflow-y-hidden flex justify-center items-center">
   
-  <div class="w-2/5">
-  <form action="">
+  <div class="md:w-2/5 sm:px-5">
+
+   <h1 class="text-3xl text-center uppercase text-white mb-3">
+    Iniciar sesión
+  </h1>
+  <form action="" id="login" class="animated bounceInLeft">
     <div id="response" class="bg-orange-300 border border-orange-900 text-black px-4 py-3 mb-4 relative text-center hidden">sss</div>
     <input autofocus autocomplete="off" class="appearance-none bg-gray-900 rounded w-full py-2 px-3 text-gray-100 mb-3 leading-tight focus:outline-none" type="text" value="" placeholder="Nombre de usuario" id="user">
     <input autofocus autocomplete="off" class="appearance-none bg-gray-900 rounded w-full py-2 px-3 text-gray-100 mb-3 leading-tight focus:outline-none" type="password" value="" placeholder="************" id="pass">
-    <button class="shadow appearance-none border hover:bg-red-500 border-red-500 rounded w-full py-2 px-3 text-gray-200 leading-tight focus:outline-none focus:shadow-none" type="button" id="login">Chatear</button>
+    <button type="submit" class="shadow appearance-none border bg-red-500 border-red-500 rounded w-full py-2 px-3 text-gray-200 leading-tight focus:outline-none focus:shadow-none mb-5" type="button">Chatear</button>
+    <button type="button" onclick="window.location='/register';" class="shadow appearance-none border bg-gray-200 text-gray-900 rounded w-full py-2 px-3  leading-tight focus:outline-none focus:shadow-none">Crear cuenta</button>
 
   </form>
   </div>
 </div>
 
 <%- include('partials/scripts') %>
-
-    <script>
-      var typing = false;
-     // var socket = io("https://nodechat-socketio.herokuapp.com/");
-      var socket = io();
-
-      document.getElementById('login').addEventListener('click', (e) =>{
-        console.log('login')
-          socket.emit('login', {
-            user: document.getElementById('user').value,
-            password: document.getElementById('pass').value
-          })
-          e.preventDefault();
-      })
-      socket.on('login', (data) => {
-        if(data.status=='SUCCESS') {
-          window.location = '/chat';
-          document.cookie('username', data.username)
-          
-        } else {
-          console.log(data);
-          document.getElementById('response').classList.remove('hidden')
-          document.getElementById('response').innerHTML = data.response;
-        }
-      });
-</script>
+<script src="public/js/login.js"></script>
 
 <%- include('partials/foot') %>
